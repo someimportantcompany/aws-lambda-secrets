@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    //Project Options
+    "isolatedModules": true,
+    "jsx": "preserve",
+    // Strict Checks
+    "strict": true,
+    // Module Resolution
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    // Linter Checks
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // Advanced
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+
+    "declaration": false,
+    "module": "commonjs",
+    "target": "ES2022",
+    "allowJs": false,
+    "alwaysStrict": true,
+    "lib": ["ES2022"],
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "sourceMap": true,
+  },
+  "exclude": ["node_modules/"]
+}
