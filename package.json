@@ -8,6 +8,7 @@
     "./dist"
   ],
   "scripts": {
+    "build": "tsup",
     "test:unit": "vitest run --coverage"
   },
   "author": "jdrydn <james@jdrydn.com> (https://github.com/jdrydn)",
