@@ -18,11 +18,13 @@ export async function getSecretString(
       return res.string;
     }
   } catch {
-    const res = await getSecretValue(id);
+    // Do nothing with this error - fail fast
+  }
 
-    if (typeof res?.string === 'string') {
-      return res.string;
-    }
+  const res = await getSecretValue(id);
+
+  if (typeof res?.string === 'string') {
+    return res.string;
   }
 
   return undefined;
@@ -43,11 +45,13 @@ export async function getSecretBinary(
       return res.binary;
     }
   } catch {
-    const res = await getSecretValue(id);
+    // Do nothing with this error - fail fast
+  }
 
-    if (res?.binary instanceof Buffer) {
-      return res.binary;
-    }
+  const res = await getSecretValue(id);
+
+  if (res?.binary instanceof Buffer) {
+    return res.binary;
   }
 
   return undefined;
@@ -78,11 +82,13 @@ export async function getParameterString(
       return res;
     }
   } catch {
-    const res = await getParameterValue(id);
+    // Do nothing with this error - fail fast
+  }
 
-    if (typeof res === 'string') {
-      return res;
-    }
+  const res = await getParameterValue(id);
+
+  if (typeof res === 'string') {
+    return res;
   }
 
   return undefined;
