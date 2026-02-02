@@ -118,3 +118,31 @@ describe('#getParameterString', () => {
     expect(result).toEqual(undefined);
   });
 });
+
+describe('#getParameterStringList', () => {
+  const { getParameterStringList } = idx;
+
+  it('should fetch a string from the Parameter Store extension', async () => {
+    vi.spyOn(ext, 'getParameterValueFromExtension').mockResolvedValue(`${value},${value}`);
+    vi.spyOn(sdk, 'getParameterValue').mockRejectedValue('Should not have been called');
+
+    const result = await getParameterStringList(key);
+    expect(result).toEqual([value, value]);
+  });
+
+  it('should fetch a binary from the Parameter Store SDK', async () => {
+    vi.spyOn(ext, 'getParameterValueFromExtension').mockRejectedValue('Did not work or was not setup');
+    vi.spyOn(sdk, 'getParameterValue').mockResolvedValue(`${value},${value}`);
+
+    const result = await getParameterStringList(key);
+    expect(result).toEqual([value, value]);
+  });
+
+  it('should fail to fetch a binary from Parameter Store', async () => {
+    vi.spyOn(ext, 'getParameterValueFromExtension').mockResolvedValue(undefined);
+    vi.spyOn(sdk, 'getParameterValue').mockResolvedValue(undefined);
+
+    const result = await getParameterStringList(key);
+    expect(result).toEqual(undefined);
+  });
+});

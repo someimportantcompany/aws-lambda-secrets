@@ -11,23 +11,25 @@ async function fetchData<T>(url: URL, signal: AbortSignal): Promise<T> {
     signal,
   });
 
-  if (!res.ok) {
+  if (res.ok) {
+    return (await res.json()) as T;
+  } else {
     const body = await res.text().catch(() => '');
     throw new Error(`Extension error ${res.status}: ${body.slice(0, 200)}`);
   }
-
-  return (await res.json()) as T;
 }
 
 export async function getSecretValueFromExtension(
   id: string,
   { timeout }: { timeout: number },
 ): Promise<{ string?: string; binary?: Buffer } | undefined> {
+  const { PARAMETERS_SECRETS_EXTENSION_HTTP_PORT: port = 2773 } = process.env;
+
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(new Error('E_TIMEOUT')), timeout);
 
   try {
-    const url = new URL('http://localhost:2773/secretsmanager/get');
+    const url = new URL(`http://localhost:${port}/secretsmanager/get`);
     url.searchParams.set('secretId', id);
 
     const res = await fetchData<GetSecretValueCommandOutput>(url, ctrl.signal);
@@ -42,7 +44,7 @@ export async function getSecretValueFromExtension(
 
 export async function getParameterValueFromExtension(
   id: string,
-  { timeout }: { timeout: number },
+  { timeout, withDecryption }: { timeout: number; withDecryption?: boolean },
 ): Promise<string | undefined> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(new Error('E_TIMEOUT')), timeout);
@@ -50,6 +52,9 @@ export async function getParameterValueFromExtension(
   try {
     const url = new URL('http://localhost:2773/systemsmanager/parameters/get');
     url.searchParams.set('name', id);
+    if (typeof withDecryption === 'boolean') {
+      url.searchParams.set('withDecryption', withDecryption ? 'true' : 'false');
+    }
 
     const res = await fetchData<GetParameterCommandOutput>(url, ctrl.signal);
     return res?.Parameter?.Value;

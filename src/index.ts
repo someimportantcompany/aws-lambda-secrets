@@ -1,7 +1,8 @@
 import { getSecretValueFromExtension, getParameterValueFromExtension } from './extension';
 import { getSecretValue, getParameterValue } from './sdk';
 
-const EXT_DEFAULT_TIMEOUT = 75; // ms
+// const EXT_DEFAULT_TIMEOUT = 75; // ms
+const EXT_DEFAULT_TIMEOUT = 500; // ms
 
 export async function getSecretString(
   id: string,
@@ -21,7 +22,9 @@ export async function getSecretString(
     // Do nothing with this error - fail fast
   }
 
-  const res = await getSecretValue(id);
+  const res = await getSecretValue({
+    SecretId: id,
+  });
 
   if (typeof res?.string === 'string') {
     return res.string;
@@ -48,7 +51,9 @@ export async function getSecretBinary(
     // Do nothing with this error - fail fast
   }
 
-  const res = await getSecretValue(id);
+  const res = await getSecretValue({
+    SecretId: id,
+  });
 
   if (res?.binary instanceof Buffer) {
     return res.binary;
@@ -71,11 +76,13 @@ export async function getParameterString(
   id: string,
   opts?: {
     timeout?: number;
+    withDecryption?: boolean;
   },
 ): Promise<string | undefined> {
   try {
     const res = await getParameterValueFromExtension(id, {
       timeout: opts?.timeout || EXT_DEFAULT_TIMEOUT,
+      withDecryption: opts?.withDecryption,
     });
 
     if (typeof res === 'string') {
@@ -85,10 +92,45 @@ export async function getParameterString(
     // Do nothing with this error - fail fast
   }
 
-  const res = await getParameterValue(id);
+  const res = await getParameterValue({
+    Name: id,
+    WithDecryption: opts?.withDecryption,
+  });
 
   if (typeof res === 'string') {
     return res;
+  }
+
+  return undefined;
+}
+
+export async function getParameterStringList(
+  id: string,
+  opts?: {
+    timeout?: number;
+    withDecryption?: boolean;
+  },
+): Promise<string[] | undefined> {
+  try {
+    const res = await getParameterValueFromExtension(id, {
+      timeout: opts?.timeout || EXT_DEFAULT_TIMEOUT,
+      withDecryption: opts?.withDecryption,
+    });
+
+    if (typeof res === 'string') {
+      return res.split(',');
+    }
+  } catch {
+    // Do nothing with this error - fail fast
+  }
+
+  const res = await getParameterValue({
+    Name: id,
+    WithDecryption: opts?.withDecryption,
+  });
+
+  if (typeof res === 'string') {
+    return res.split(',');
   }
 
   return undefined;

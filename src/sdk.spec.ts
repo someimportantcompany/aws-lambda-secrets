@@ -16,7 +16,9 @@ describe('#getSecretValue', () => {
       SecretString: value,
     });
 
-    const result = await getSecretValue(key);
+    const result = await getSecretValue({
+      SecretId: key,
+    });
     expect(result).toEqual({
       string: value,
       binary: undefined,
@@ -28,7 +30,9 @@ describe('#getSecretValue', () => {
       SecretBinary: Buffer.from(value),
     });
 
-    const result = await getSecretValue(key);
+    const result = await getSecretValue({
+      SecretId: key,
+    });
     expect(result).toEqual({
       string: undefined,
       binary: Buffer.from(value),
@@ -48,7 +52,9 @@ describe('#getParameterValue', () => {
       },
     });
 
-    const result = await getParameterValue(key);
+    const result = await getParameterValue({
+      Name: key,
+    });
     expect(result).toEqual(value);
   });
 });

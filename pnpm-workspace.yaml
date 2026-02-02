@@ -1,2 +1,5 @@
+packages:
+  - integration-tests
+
 onlyBuiltDependencies:
   - esbuild
