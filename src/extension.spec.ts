@@ -5,7 +5,7 @@ import { setupServer } from 'msw/node';
 import type { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import type { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
 
-import { getSecretValueFromExtension, getParameterValueFromExtension } from './extension';
+import * as ext from './extension';
 
 const key = 'key';
 const value = 'value';
@@ -16,9 +16,10 @@ afterAll(() => server.close());
 afterEach(() => server.resetHandlers());
 
 describe('#getSecretValueFromExtension', () => {
+  const { getSecretValueFromExtension } = ext;
   const url = 'http://localhost:2773/secretsmanager/get';
 
-  it('should fetch a string from Secrets Manager', async () => {
+  it('should fetch a string from the Extension service', async () => {
     server.use(
       http.get(url, () => {
         return HttpResponse.json({
@@ -35,7 +36,7 @@ describe('#getSecretValueFromExtension', () => {
     });
   });
 
-  it('should fetch a binary from Secrets Manager', async () => {
+  it('should fetch a binary from the Extension service', async () => {
     server.use(
       http.get(url, () => {
         return HttpResponse.json({
@@ -50,6 +51,22 @@ describe('#getSecretValueFromExtension', () => {
       string: undefined,
       binary: Buffer.from(value),
     });
+  });
+
+  it('should handle an error from the Extension service', async () => {
+    server.use(
+      http.get(url, () => {
+        return HttpResponse.text('Nope', { status: 400 });
+      }),
+    );
+
+    try {
+      await getSecretValueFromExtension(key, { timeout: 3 });
+      assert.fail('Should have thrown an error');
+    } catch (err) {
+      expect(err).toBeInstanceOf(Error);
+      expect((err as Error).message).toEqual('Extension error 400: Nope');
+    }
   });
 
   it('should handle a timeout', async () => {
@@ -71,9 +88,10 @@ describe('#getSecretValueFromExtension', () => {
 });
 
 describe('#getParameterValueFromExtension', () => {
+  const { getParameterValueFromExtension } = ext;
   const url = 'http://localhost:2773/systemsmanager/parameters/get';
 
-  it('should fetch a string from Secrets Manager', async () => {
+  it('should fetch a string from the Extension service', async () => {
     server.use(
       http.get(url, () => {
         return HttpResponse.json({
@@ -89,6 +107,22 @@ describe('#getParameterValueFromExtension', () => {
 
     const result = await getParameterValueFromExtension(key, { timeout: 1000 });
     expect(result).toEqual(value);
+  });
+
+  it('should handle an error from the Extension service', async () => {
+    server.use(
+      http.get(url, () => {
+        return HttpResponse.text('Nope', { status: 400 });
+      }),
+    );
+
+    try {
+      await getParameterValueFromExtension(key, { timeout: 3 });
+      assert.fail('Should have thrown an error');
+    } catch (err) {
+      expect(err).toBeInstanceOf(Error);
+      expect((err as Error).message).toEqual('Extension error 400: Nope');
+    }
   });
 
   it('should handle a timeout', async () => {
