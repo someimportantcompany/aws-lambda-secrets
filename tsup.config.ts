@@ -6,9 +6,9 @@ export default defineConfig({
   bundle: true,
   clean: true,
   format: 'cjs',
-  minify: true,
+  minify: false,
   platform: 'node',
-  sourcemap: true,
+  sourcemap: false,
   splitting: false,
   target: 'node22',
 });
