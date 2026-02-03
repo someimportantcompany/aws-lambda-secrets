@@ -1,8 +1,8 @@
 import { getSecretValueFromExtension, getParameterValueFromExtension } from './extension';
 import { getSecretValue, getParameterValue } from './sdk';
+import { logMessage } from './utils';
 
-// const EXT_DEFAULT_TIMEOUT = 75; // ms
-const EXT_DEFAULT_TIMEOUT = 500; // ms
+const EXT_DEFAULT_TIMEOUT = 10 * 1000; // 10s
 
 export async function getSecretString(
   id: string,
@@ -16,6 +16,7 @@ export async function getSecretString(
     });
 
     if (typeof res?.string === 'string') {
+      logMessage?.('Secret retrieved from Extension: %s', id);
       return res.string;
     }
   } catch {
@@ -27,9 +28,11 @@ export async function getSecretString(
   });
 
   if (typeof res?.string === 'string') {
+    logMessage?.('Secret retrieved from Secrets Manager: %s', id);
     return res.string;
   }
 
+  logMessage?.('Secret not found in Secrets Manager: %s', id);
   return undefined;
 }
 
@@ -45,6 +48,7 @@ export async function getSecretBinary(
     });
 
     if (res?.binary instanceof Buffer) {
+      logMessage?.('Secret retrieved from Extension: %s', id);
       return res.binary;
     }
   } catch {
@@ -56,9 +60,11 @@ export async function getSecretBinary(
   });
 
   if (res?.binary instanceof Buffer) {
+    logMessage?.('Secret retrieved from Secrets Manager: %s', id);
     return res.binary;
   }
 
+  logMessage?.('Secret not found in Secrets Manager: %s', id);
   return undefined;
 }
 
@@ -86,6 +92,7 @@ export async function getParameterString(
     });
 
     if (typeof res === 'string') {
+      logMessage?.('Parameter retrieved from Extension: %s', id);
       return res;
     }
   } catch {
@@ -98,9 +105,11 @@ export async function getParameterString(
   });
 
   if (typeof res === 'string') {
+    logMessage?.('Parameter retrieved from Systems Manager: %s', id);
     return res;
   }
 
+  logMessage?.('Parameter not found in Systems Manager: %s', id);
   return undefined;
 }
 
@@ -118,6 +127,7 @@ export async function getParameterStringList(
     });
 
     if (typeof res === 'string') {
+      logMessage?.('Parameter retrieved from Extension: %s', id);
       return res.split(',');
     }
   } catch {
@@ -130,8 +140,10 @@ export async function getParameterStringList(
   });
 
   if (typeof res === 'string') {
+    logMessage?.('Parameter retrieved from Systems Manager: %s', id);
     return res.split(',');
   }
 
+  logMessage?.('Parameter not found in Systems Manager: %s', id);
   return undefined;
 }

@@ -23,7 +23,7 @@ export async function getSecretValueFromExtension(
   id: string,
   { timeout }: { timeout: number },
 ): Promise<{ string?: string; binary?: Buffer } | undefined> {
-  const { PARAMETERS_SECRETS_EXTENSION_HTTP_PORT: port = 2773 } = process.env;
+  const { PARAMETERS_SECRETS_EXTENSION_HTTP_PORT: port = '2773' } = process.env;
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(new Error('E_TIMEOUT')), timeout);
@@ -46,11 +46,13 @@ export async function getParameterValueFromExtension(
   id: string,
   { timeout, withDecryption }: { timeout: number; withDecryption?: boolean },
 ): Promise<string | undefined> {
+  const { PARAMETERS_SECRETS_EXTENSION_HTTP_PORT: port = '2773' } = process.env;
+
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(new Error('E_TIMEOUT')), timeout);
 
   try {
-    const url = new URL('http://localhost:2773/systemsmanager/parameters/get');
+    const url = new URL(`http://localhost:${port}/systemsmanager/parameters/get`);
     url.searchParams.set('name', id);
     if (typeof withDecryption === 'boolean') {
       url.searchParams.set('withDecryption', withDecryption ? 'true' : 'false');

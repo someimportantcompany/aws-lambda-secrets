@@ -20,20 +20,6 @@ export class IntegrationTestsStack extends cdk.Stack {
     });
     role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
-    // First function, no layer so expect a direct call to Secrets Manager
-    const fn1 = new nodejs.NodejsFunction(this, 'Fn1', {
-      functionName: `${this.stackName}-lambda-fn1`,
-      runtime: lambda.Runtime.NODEJS_24_X,
-      role,
-      architecture: lambda.Architecture.ARM_64,
-      entry: path.join(__dirname, '../lambda/handler.ts'),
-      handler: 'handler',
-      timeout: cdk.Duration.minutes(5),
-      environment: {
-        ...data.environment,
-      },
-    });
-
     // Grab the Secrets extension layer
     // @link https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html
     const secretsExtensionLayer = lambda.LayerVersion.fromLayerVersionArn(
@@ -41,10 +27,19 @@ export class IntegrationTestsStack extends cdk.Stack {
       'SecretsExtensionLayer',
       'arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:21',
     );
+    const secretsExtensionEnvs = {
+      AWS_LAMBDA_SECRETS_LOG_MESSAGES: 'TRUE',
+      // @link https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html
+      PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL: 'DEBUG',
+      PARAMETERS_SECRETS_EXTENSION_CACHE_ENABLED: 'TRUE',
 
-    // Second function, include layer so expect a faster call to Secrets Manager
-    const fn2 = new nodejs.NodejsFunction(this, 'Fn2', {
-      functionName: `${this.stackName}-lambda-fn2`,
+      SECRETS_MANAGER_TIMEOUT_MILLIS: '9000',
+      SSM_PARAMETER_STORE_TIMEOUT_MILLIS: '9000',
+    };
+
+    // First function, no layer so expect a direct call to Secrets Manager
+    const try1 = new nodejs.NodejsFunction(this, 'LambdaTry1', {
+      functionName: `${this.stackName}-lambda-try1`,
       runtime: lambda.Runtime.NODEJS_24_X,
       role,
       architecture: lambda.Architecture.ARM_64,
@@ -53,16 +48,57 @@ export class IntegrationTestsStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(5),
       environment: {
         ...data.environment,
+      },
+    });
+    // Second function, include layer so expect a faster call to Secrets Manager
+    const try2 = new nodejs.NodejsFunction(this, 'LambdaTry2', {
+      functionName: `${this.stackName}-lambda-try2`,
+      runtime: lambda.Runtime.NODEJS_24_X,
+      role,
+      architecture: lambda.Architecture.ARM_64,
+      entry: path.join(__dirname, '../lambda/handler.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(5),
+      environment: {
+        ...data.environment,
+        ...secretsExtensionEnvs,
+      },
+      layers: [secretsExtensionLayer],
+    });
 
-        // @link https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html
-        PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL: 'DEBUG',
-        PARAMETERS_SECRETS_EXTENSION_CACHE_ENABLED: 'TRUE',
+    // First function, no layer so expect a direct call to Secrets Manager
+    const bench1 = new nodejs.NodejsFunction(this, 'LambdaBench1', {
+      functionName: `${this.stackName}-lambda-bench1`,
+      runtime: lambda.Runtime.NODEJS_24_X,
+      role,
+      architecture: lambda.Architecture.ARM_64,
+      entry: path.join(__dirname, '../lambda/benchmarks.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(5),
+      environment: {
+        ...data.environment,
+      },
+    });
+    // Second function, include layer so expect a faster call to Secrets Manager
+    const bench2 = new nodejs.NodejsFunction(this, 'LambdaBench2', {
+      functionName: `${this.stackName}-lambda-bench2`,
+      runtime: lambda.Runtime.NODEJS_24_X,
+      role,
+      architecture: lambda.Architecture.ARM_64,
+      entry: path.join(__dirname, '../lambda/benchmarks.ts'),
+      handler: 'handler',
+      timeout: cdk.Duration.minutes(5),
+      environment: {
+        ...data.environment,
+        ...secretsExtensionEnvs,
+        // For bench2, reduce the log-level to Info, the Debug logs are noisy
+        PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL: 'INFO',
       },
       layers: [secretsExtensionLayer],
     });
 
     // Allow the functions (and thus the extension) to read the secrets & parameters
-    data.grantRead([fn1, fn2]);
+    data.grantRead([try1, try2, bench1, bench2]);
   }
 
   private createData() {
