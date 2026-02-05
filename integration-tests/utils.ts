@@ -9,7 +9,7 @@ export async function invokeLambdaFunction(
 ) {
   const startedAt = Date.now();
   let status: number = 500;
-  let data: unknown = undefined;
+  let data: any = undefined;
   let error: string | undefined = undefined;
 
   try {

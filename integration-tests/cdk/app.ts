@@ -28,11 +28,12 @@ export class IntegrationTestsStack extends cdk.Stack {
       'arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:21',
     );
     const secretsExtensionEnvs = {
+      AWS_LAMBDA_SECRETS_TIMEOUT: '10000',
       AWS_LAMBDA_SECRETS_LOG_MESSAGES: 'TRUE',
+
       // @link https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html
       PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL: 'DEBUG',
       PARAMETERS_SECRETS_EXTENSION_CACHE_ENABLED: 'TRUE',
-
       SECRETS_MANAGER_TIMEOUT_MILLIS: '9000',
       SSM_PARAMETER_STORE_TIMEOUT_MILLIS: '9000',
     };
@@ -48,6 +49,7 @@ export class IntegrationTestsStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(5),
       environment: {
         ...data.environment,
+        AWS_LAMBDA_SECRETS_TIMEOUT: '0',
       },
     });
     // Second function, include layer so expect a faster call to Secrets Manager
@@ -77,6 +79,7 @@ export class IntegrationTestsStack extends cdk.Stack {
       timeout: cdk.Duration.minutes(5),
       environment: {
         ...data.environment,
+        AWS_LAMBDA_SECRETS_TIMEOUT: '0',
       },
     });
     // Second function, include layer so expect a faster call to Secrets Manager

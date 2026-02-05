@@ -74,5 +74,6 @@ export async function handler(event: unknown, context: unknown) {
 
   return {
     results,
+    table: bench.table(),
   };
 }
