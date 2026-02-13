@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "lint": "tsc --noEmit",
     "test:integration": "cd integration-tests && vitest run",
     "test:integration:deploy": "cd integration-tests && cdk deploy",
     "test:integration:benchmarks": "tsx ./integration-tests/lambda.benchmarks.ts",
