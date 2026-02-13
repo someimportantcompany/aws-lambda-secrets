@@ -1,6 +1,6 @@
 {
   "name": "aws-lambda-secrets",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Fetch secrets from AWS Secrets Manager or Parameter Store during Lambda's runtime",
   "packageManager": "pnpm@10.27.0",
   "main": "dist/index.js",
