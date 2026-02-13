@@ -1,0 +1,49 @@
+{
+  "name": "aws-lambda-secrets",
+  "version": "1.0.0",
+  "description": "Fetch secrets from AWS Secrets Manager or Parameter Store during Lambda's runtime",
+  "packageManager": "pnpm@10.27.0",
+  "main": "dist/index.js",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "lint": "tsc --noEmit",
+    "test:integration": "cd integration-tests && vitest run",
+    "test:integration:deploy": "cd integration-tests && cdk deploy",
+    "test:integration:benchmarks": "tsx ./integration-tests/lambda.benchmarks.ts",
+    "test:unit": "vitest run --coverage"
+  },
+  "author": "jdrydn <james@jdrydn.com> (https://github.com/jdrydn)",
+  "license": "MIT",
+  "keywords": [
+    "aws",
+    "lambda",
+    "secrets",
+    "manager",
+    "parameter",
+    "store"
+  ],
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.980.0",
+    "@aws-sdk/client-ssm": "^3.980.0"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-lambda": "^3.980.0",
+    "@types/ms": "^2.1.0",
+    "@types/node": "^25.2.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "aws-cdk": "2.1104.0",
+    "aws-cdk-lib": "^2.236.0",
+    "aws-sdk-client-mock": "^4.1.0",
+    "constructs": "^10.0.0",
+    "ms": "^2.1.3",
+    "msw": "^2.12.7",
+    "tinybench": "^6.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

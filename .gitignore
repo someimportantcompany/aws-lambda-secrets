@@ -1,0 +1,9 @@
+.cdk.staging/
+cdk.out/
+coverage/
+dist/
+node_modules/
+
+.DS_Store
+.env
+.envrc
